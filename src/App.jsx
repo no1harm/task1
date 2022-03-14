@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import './App.css';
-const contractAddress = "0x16A3137947773Db862fFc537Ce3A1feD4e895A49"
-import abi from "./utils/WavePortal.json";
-const contractABI = abi.abi;
+// const contractAddress = "0x16A3137947773Db862fFc537Ce3A1feD4e895A49"
+// import abi from "./utils/WavePortal.json";
+const contractAddress = abi.abi;
+import abi from "./utils/Task.json";
 const tokenAddress = '0x03c9eEb38583Ae082e90AE82c41b095E0188e193'
 function randomString(e) {    
     e = e || 32;
