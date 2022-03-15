@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import './App.css';
 // const contractAddress = "0x16A3137947773Db862fFc537Ce3A1feD4e895A49"
 const contractAddress = '0x6cB075BC3151F7fdaD6a9841AeDF54219a6720f6';
-const nftContractAddress = '0x062Af1fe153F50Ff5c92713cd476e82B3765E45e'
+const nftContractAddress = '0xD55Fab730E0E54AC8C51E130F24d4F762f417353'
 // import abi from "./utils/WavePortal.json";
 import { Steps, Button, message, Statistic, Row, Col, } from 'antd';
 const { Step } = Steps;
@@ -101,6 +101,7 @@ export default function App() {
         const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
         const totalSupply = await taskTokenContract.totalSupply()
         const isClaimed = currentAccount ? await taskTokenContract.isClaimed(currentAccount) : false
+        // const approve = await taskTokenContract.approve(currentAccount, 50)
         setClaimed(isClaimed)
         setCurrent(isClaimed ? 1 : 0)
         setTotalToken(ethers.utils.formatUnits(totalSupply,18))
