@@ -122,6 +122,8 @@ export default function App() {
         console.log('taskNftContract ==>',taskNftContract)
         const supply = await taskNftContract.MAX_SUPPLY();
         const totalMinted = await taskNftContract.checkTotalMined();
+        const minted = currentAccount ? await taskNftContract.numberMinted(currentAccount) : false
+        minted && setMinted(ethers.utils.formatUnits(minted,18) !== '0.0')
         setTotalNft(supply.toString())
         setMintedNft(ethers.utils.formatUnits(totalMinted,18))
       } else {
@@ -163,7 +165,25 @@ export default function App() {
   }
 
   const mint = async ()=>{
-    console.log('mint')
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const taskNftContract = new ethers.Contract(nftContractAddress, nftContractABI, signer);
+        console.log('taskNftContract ==>',taskNftContract)
+        const mint = await taskNftContract.mint(1);
+        console.log("Mining...", mint.hash);
+        await mint.wait();
+        setMinted(true)
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setClaimedLoading(false)
+    }
   }
   
   return (
