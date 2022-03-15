@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import './App.css';
 // const contractAddress = "0x16A3137947773Db862fFc537Ce3A1feD4e895A49"
+const contractAddress = '0x03c9eEb38583Ae082e90AE82c41b095E0188e193';
 // import abi from "./utils/WavePortal.json";
-const contractAddress = abi.abi;
+import { Steps, Button, message, Statistic, Row, Col, } from 'antd';
+const { Step } = Steps;
 import abi from "./utils/Task.json";
+const contractABI = abi.abi
 const tokenAddress = '0x03c9eEb38583Ae082e90AE82c41b095E0188e193'
 function randomString(e) {    
     e = e || 32;
@@ -14,11 +17,35 @@ function randomString(e) {
     for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
     return 'random massage' + n
 }
+const steps = [
+  {
+    title: 'Claim',
+    content: 'First-content',
+  },
+  {
+    title: 'Mint',
+    content: 'Second-content',
+  },
+  {
+    title: 'Done',
+    content: 'Last-content',
+  },
+];
 
 export default function App() {
-
   const [currentAccount, setCurrentAccount] = useState("");
   const [allWaves, setAllWaves] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [claimed, setClaimed] = useState(false)
+  const [totalToken, setTotalToken] = useState(0);
+
+  const next = () => {
+    setCurrent(current + 1);
+  };
+
+  const prev = () => {
+    setCurrent(current - 1);
+  };
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -30,15 +57,10 @@ export default function App() {
       } else {
         console.log("We have the ethereum object", ethereum);
       }
-
-      /*
-      * Check if we're authorized to access the user's wallet
-      */
       const accounts = await ethereum.request({ method: "eth_accounts" });
-
       if (accounts.length !== 0) {
         const account = accounts[0];
-        console.log("Found an authorized account:", account);
+        message.info(`${account} connected`)
         setCurrentAccount(account)
       } else {
         console.log("No authorized account found")
@@ -56,23 +78,41 @@ export default function App() {
         alert("Get MetaMask!");
         return;
       }
-
       const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-
-      console.log("Connected", accounts[0]);
+      console.log('accounts ====>',accounts)
+      message.info(`${account} connected`)
       setCurrentAccount(accounts[0]);
     } catch (error) {
       console.log(error)
     }
   }
 
-  /*
-  * This runs our function when the page loads.
-  */
+  const checkContract = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const taskTokenContract = new ethers.Contract(contractAddress, contractABI, signer);
+        const totalSupply = await taskTokenContract.totalSupply()
+        const isClaimed = currentAccount ? await taskTokenContract.isClaimed(currentAccount) : false
+        setClaimed(isClaimed)
+        setTotalToken(ethers.utils.formatUnits(totalSupply,18))
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
-    checkIfWalletIsConnected();
-    getAllWaves()
-  }, [])
+    if (!currentAccount) {
+      checkIfWalletIsConnected();
+    }
+    checkContract()
+  }, [currentAccount])
+  
 
   const wave = async () => {
     try {
@@ -102,6 +142,25 @@ export default function App() {
       }
     } catch (error) {
       console.log(error)
+    }
+  }
+
+  const claim = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const taskTokenContract = new ethers.Contract(contractAddress, contractABI, signer);
+        console.log('taskTokenContract',taskTokenContract)
+        // const task = await taskTokenContract.getAllWaves();
+        const totalSupply = await taskTokenContract.totalSupply
+        const isClaimed  = await taskTokenContract.isClaimed(currentAccount)
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -146,34 +205,58 @@ export default function App() {
   }
   
   return (
-    <div className="mainContainer">
-      <div className="dataContainer">
-        <div className="header">
-          👋 Hey there!
-        </div>
-
-        <div className="bio">
-          I am farza and I worked on self-driving cars so that's pretty cool right? Connect your Ethereum wallet and wave at me!
-        </div>
-
-        <button className="waveButton" onClick={wave}>
-          Wave at Me
-        </button>
-
-        {!currentAccount && (
-          <button className="waveButton" onClick={connectWallet}>
-            Connect Wallet
-          </button>
+    <div style={{ margin: '20px 80px' }}>
+      {currentAccount && <div className="display-right">
+        <Button>{ currentAccount + ' connected'}</Button>
+      </div>}
+      <Row gutter={16} style={{marginBottom: '50px'}}>
+        <Col span={6}>
+          <Statistic title="Token Total Supply" value={totalToken} />
+        </Col>
+        <Col span={6}>
+          <Statistic title="NFT Total Supply" value={112893} />
+        </Col>
+        <Col span={6}>
+          <Statistic title="Total Minted NFT" value={112893} />
+        </Col>
+        <Col span={6}>
+          <Statistic title="Your Claimed Token" value={claimed ? 50 : 0} />
+        </Col>
+      </Row>
+      <Steps current={current}>
+        {steps.map(item => (
+          <Step key={item.title} title={item.title} />
+        ))}
+      </Steps>
+      <div className="steps-content">
+        {current == 0 &&
+          <>
+            {!currentAccount && (
+              <Button onClick={connectWallet}>
+                Connect Wallet
+              </Button>
+          )}
+          <Button disabled={claimed} onClick={claim}>
+            {claimed ? 'Claimed' : 'Claim'}
+          </Button>
+          </>}
+      </div>
+      <div className="steps-action">
+        {current < steps.length - 1 && (
+          <Button type="primary" onClick={() => next()}>
+            Next
+          </Button>
         )}
-
-        {allWaves.map((wave, index) => {
-          return (
-            <div key={index} style={{ backgroundColor: "OldLace", marginTop: "16px", padding: "8px" }}>
-              <div>Address: {wave.address}</div>
-              <div>Time: {wave.timestamp.toString()}</div>
-              <div>Message: {wave.message}</div>
-            </div>)
-        })}
+        {current === steps.length - 1 && (
+          <Button type="primary" onClick={() => message.success('Processing complete!')}>
+            Done
+          </Button>
+        )}
+        {current > 0 && (
+          <Button style={{ margin: '0 8px' }} onClick={() => prev()}>
+            Previous
+          </Button>
+        )}
       </div>
     </div>
   );
