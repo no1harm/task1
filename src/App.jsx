@@ -3,11 +3,14 @@ import { ethers } from "ethers";
 import './App.css';
 // const contractAddress = "0x16A3137947773Db862fFc537Ce3A1feD4e895A49"
 const contractAddress = '0x6cB075BC3151F7fdaD6a9841AeDF54219a6720f6';
+const nftContractAddress = '0x062Af1fe153F50Ff5c92713cd476e82B3765E45e'
 // import abi from "./utils/WavePortal.json";
 import { Steps, Button, message, Statistic, Row, Col, } from 'antd';
 const { Step } = Steps;
 import abi from "./utils/Task.json";
-const contractABI = abi.abi
+import nftAbi from "./utils/TASKNFT.json";
+const tokenContractABI = abi.abi
+const nftContractABI = nftAbi.abi
 function randomString(e) {    
     e = e || 32;
     var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
@@ -38,6 +41,9 @@ export default function App() {
   const [claimed, setClaimed] = useState(false)
   const [totalToken, setTotalToken] = useState(0);
   const [claimedLoading, setClaimedLoading] = useState(false);
+  const [minted,setMinted] = useState(false)
+  const [totalNft,setTotalNft] = useState(0)
+  const [mintedNft,setMintedNft] = useState(0)
 
   const next = () => {
     setCurrent(current + 1);
@@ -86,19 +92,38 @@ export default function App() {
     }
   }
 
-  const checkContract = async () => {
+  const checkTokenContract = async () => {
     try {
       const { ethereum } = window;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
-        const taskTokenContract = new ethers.Contract(contractAddress, contractABI, signer);
+        const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
         const totalSupply = await taskTokenContract.totalSupply()
         const isClaimed = currentAccount ? await taskTokenContract.isClaimed(currentAccount) : false
         setClaimed(isClaimed)
         setCurrent(isClaimed ? 1 : 0)
         setTotalToken(ethers.utils.formatUnits(totalSupply,18))
-        console.log('ethers.utils.formatUnits(totalSupply,18)',ethers.utils.formatUnits(totalSupply,18))
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const checkNftContract = async ()=>{
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const taskNftContract = new ethers.Contract(nftContractAddress, nftContractABI, signer);
+        console.log('taskNftContract ==>',taskNftContract)
+        const supply = await taskNftContract.MAX_SUPPLY();
+        const totalMinted = await taskNftContract.checkTotalMined();
+        setTotalNft(supply.toString())
+        setMintedNft(ethers.utils.formatUnits(totalMinted,18))
       } else {
         console.log("Ethereum object doesn't exist!")
       }
@@ -111,7 +136,8 @@ export default function App() {
     if (!currentAccount) {
       checkIfWalletIsConnected();
     }
-    checkContract()
+    checkTokenContract()
+    checkNftContract()
   }, [currentAccount])
 
   const claim = async () => {
@@ -121,11 +147,11 @@ export default function App() {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
-        const taskTokenContract = new ethers.Contract(contractAddress, contractABI, signer);
+        const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
         const claimTxn = await taskTokenContract.claim()
         console.log("Mining...", claimTxn.hash);
         await claimTxn.wait();
-        checkContract()
+        checkTokenContract()
       } else {
         console.log("Ethereum object doesn't exist!")
       }
@@ -136,44 +162,8 @@ export default function App() {
     }
   }
 
-  const getAllWaves = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
-
-        /*
-         * Call the getAllWaves method from your Smart Contract
-         */
-        const waves = await wavePortalContract.getAllWaves();
-
-
-        /*
-         * We only need address, timestamp, and message in our UI so let's
-         * pick those out
-         */
-        let wavesCleaned = [];
-        waves.forEach(wave => {
-          wavesCleaned.push({
-            address: wave.waver,
-            timestamp: new Date(wave.timestamp * 1000),
-            message: wave.message
-          });
-        });
-
-        /*
-         * Store our data in React State
-         */
-        setAllWaves(wavesCleaned);
-        getAllWaves()
-      } else {
-        console.log("Ethereum object doesn't exist!")
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  const mint = async ()=>{
+    console.log('mint')
   }
   
   return (
@@ -186,10 +176,10 @@ export default function App() {
           <Statistic title="Token Total Supply" value={totalToken} />
         </Col>
         <Col span={6}>
-          <Statistic title="NFT Total Supply" value={112893} />
+          <Statistic title="NFT Total Supply" value={totalNft} />
         </Col>
         <Col span={6}>
-          <Statistic title="Total Minted NFT" value={112893} />
+          <Statistic title="Total Minted NFT" value={mintedNft} />
         </Col>
         <Col span={6}>
           <Statistic title="Your Claimed Token" value={claimed ? 50 : 0} />
@@ -201,17 +191,25 @@ export default function App() {
         ))}
       </Steps>
       <div className="steps-content">
+        {!currentAccount && (
+          <Button onClick={connectWallet}>
+            Connect Wallet
+          </Button>
+        )}
         {current == 0 &&
           <>
-            {!currentAccount && (
-              <Button onClick={connectWallet}>
-                Connect Wallet
-              </Button>
-          )}
-          {currentAccount && <Button disabled={claimed} loading={claimedLoading} onClick={claim}>
-            {claimed ? 'Claimed' : 'Claim'}
-          </Button>}
+            {currentAccount && <Button disabled={claimed} loading={claimedLoading} onClick={claim}>
+              {claimed ? 'Claimed' : 'Claim'}
+            </Button>}
           </>}
+          {
+            current == 1 && 
+            <>
+            {currentAccount && <Button disabled={minted} loading={claimedLoading} onClick={mint}>
+              {minted ? 'Minted' : 'Mint'}
+            </Button>}
+          </>
+          }
       </div>
       <div className="steps-action">
         {current < steps.length - 1 && (
