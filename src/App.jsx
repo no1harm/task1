@@ -2,13 +2,12 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import './App.css';
 // const contractAddress = "0x16A3137947773Db862fFc537Ce3A1feD4e895A49"
-const contractAddress = '0x03c9eEb38583Ae082e90AE82c41b095E0188e193';
+const contractAddress = '0x6cB075BC3151F7fdaD6a9841AeDF54219a6720f6';
 // import abi from "./utils/WavePortal.json";
 import { Steps, Button, message, Statistic, Row, Col, } from 'antd';
 const { Step } = Steps;
 import abi from "./utils/Task.json";
 const contractABI = abi.abi
-const tokenAddress = '0x03c9eEb38583Ae082e90AE82c41b095E0188e193'
 function randomString(e) {    
     e = e || 32;
     var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
@@ -38,6 +37,7 @@ export default function App() {
   const [current, setCurrent] = useState(0);
   const [claimed, setClaimed] = useState(false)
   const [totalToken, setTotalToken] = useState(0);
+  const [claimedLoading, setClaimedLoading] = useState(false);
 
   const next = () => {
     setCurrent(current + 1);
@@ -79,8 +79,7 @@ export default function App() {
         return;
       }
       const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-      console.log('accounts ====>',accounts)
-      message.info(`${account} connected`)
+      message.info(`${accounts[0]} connected`)
       setCurrentAccount(accounts[0]);
     } catch (error) {
       console.log(error)
@@ -97,7 +96,9 @@ export default function App() {
         const totalSupply = await taskTokenContract.totalSupply()
         const isClaimed = currentAccount ? await taskTokenContract.isClaimed(currentAccount) : false
         setClaimed(isClaimed)
+        setCurrent(isClaimed ? 1 : 0)
         setTotalToken(ethers.utils.formatUnits(totalSupply,18))
+        console.log('ethers.utils.formatUnits(totalSupply,18)',ethers.utils.formatUnits(totalSupply,18))
       } else {
         console.log("Ethereum object doesn't exist!")
       }
@@ -112,55 +113,26 @@ export default function App() {
     }
     checkContract()
   }, [currentAccount])
-  
-
-  const wave = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
-
-        let count = await wavePortalContract.getTotalWaves();
-        console.log("Retrieved total wave count...", count.toNumber());
-
-        /*
-        * Execute the actual wave from your smart contract
-        */
-        const waveTxn = await wavePortalContract.wave(randomString(10));
-        console.log("Mining...", waveTxn.hash);
-
-        await waveTxn.wait();
-        console.log("Mined -- ", waveTxn.hash);
-
-        count = await wavePortalContract.getTotalWaves();
-        console.log("Retrieved total wave count...", count.toNumber());
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
 
   const claim = async () => {
     try {
+      setClaimedLoading(true)
       const { ethereum } = window;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const taskTokenContract = new ethers.Contract(contractAddress, contractABI, signer);
-        console.log('taskTokenContract',taskTokenContract)
-        // const task = await taskTokenContract.getAllWaves();
-        const totalSupply = await taskTokenContract.totalSupply
-        const isClaimed  = await taskTokenContract.isClaimed(currentAccount)
+        const claimTxn = await taskTokenContract.claim()
+        console.log("Mining...", claimTxn.hash);
+        await claimTxn.wait();
+        checkContract()
       } else {
         console.log("Ethereum object doesn't exist!")
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setClaimedLoading(false)
     }
   }
 
@@ -236,9 +208,9 @@ export default function App() {
                 Connect Wallet
               </Button>
           )}
-          <Button disabled={claimed} onClick={claim}>
+          {currentAccount && <Button disabled={claimed} loading={claimedLoading} onClick={claim}>
             {claimed ? 'Claimed' : 'Claim'}
-          </Button>
+          </Button>}
           </>}
       </div>
       <div className="steps-action">
