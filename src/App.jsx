@@ -120,7 +120,6 @@ export default function App() {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const taskNftContract = new ethers.Contract(nftContractAddress, nftContractABI, signer);
-        console.log('taskNftContract ==>',taskNftContract)
         const supply = await taskNftContract.MAX_SUPPLY();
         const totalMinted = await taskNftContract.checkTotalMined();
         const minted = currentAccount ? await taskNftContract.numberMinted(currentAccount) : false
@@ -172,7 +171,9 @@ export default function App() {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const taskNftContract = new ethers.Contract(nftContractAddress, nftContractABI, signer);
-        console.log('taskNftContract ==>',taskNftContract)
+        const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
+        console.log('taskNftContract ==>', taskNftContract)
+        await taskTokenContract.approve(nftContractAddress, (50 * 10 ** 18).toString())
         const mint = await taskNftContract.mint(1);
         console.log("Mining...", mint.hash);
         await mint.wait();
