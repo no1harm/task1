@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import './App.css';
 // const contractAddress = "0x16A3137947773Db862fFc537Ce3A1feD4e895A49"
 const contractAddress = '0x6cB075BC3151F7fdaD6a9841AeDF54219a6720f6';
-const nftContractAddress = '0xE7067C6B14289e3087Cd94cc83813BA6DeEcabD6'
+const nftContractAddress = '0x54F64346F496e653Aa161F227b5d0e497FFAE841'
 // import abi from "./utils/WavePortal.json";
 import { Steps, Button, message, Statistic, Row, Col, } from 'antd';
 const { Step } = Steps;
