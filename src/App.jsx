@@ -5,7 +5,7 @@ import './App.css';
 const contractAddress = '0x6cB075BC3151F7fdaD6a9841AeDF54219a6720f6';
 const nftContractAddress = '0x54F64346F496e653Aa161F227b5d0e497FFAE841'
 // import abi from "./utils/WavePortal.json";
-import { Steps, Button, message, Statistic, Row, Col, } from 'antd';
+import { Steps, Button, message, Statistic, Row, Col, Result } from 'antd';
 const { Step } = Steps;
 import abi from "./utils/Task.json";
 import nftAbi from "./utils/TASKNFT.json";
@@ -122,10 +122,12 @@ export default function App() {
         const taskNftContract = new ethers.Contract(nftContractAddress, nftContractABI, signer);
         const supply = await taskNftContract.MAX_SUPPLY();
         const totalMinted = await taskNftContract.checkTotalMined();
-        const minted = currentAccount ? await taskNftContract.numberMinted(currentAccount) : false
-        minted && setMinted(ethers.utils.formatUnits(minted,18) !== '0.0')
+        const isMinted = currentAccount ? await taskNftContract.numberMinted(currentAccount) : false
+        isMinted && setMinted(ethers.utils.formatUnits(isMinted, 18) !== '0.0')
+        console.log('isMinted ===>',isMinted)
+        // setCurrent(isMinted ? 2 : (claimed ? 1 : 0))
         setTotalNft(supply.toString())
-        setMintedNft(ethers.utils.formatUnits(totalMinted,18))
+        setMintedNft(totalMinted.toString())
       } else {
         console.log("Ethereum object doesn't exist!")
       }
@@ -149,7 +151,9 @@ export default function App() {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
+        console.log('signer==>', signer)
         const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
+        // await taskTokenContract.approve(currentAccount, (50 * 10 ** 18).toString())
         const claimTxn = await taskTokenContract.claim()
         console.log("Mining...", claimTxn.hash);
         await claimTxn.wait();
@@ -174,10 +178,11 @@ export default function App() {
         const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
         console.log('taskNftContract ==>', taskNftContract)
         await taskTokenContract.approve(nftContractAddress, (50 * 10 ** 18).toString())
-        const mint = await taskNftContract.mint(1);
+        const mint = await taskNftContract.mint((1 * 10 ** 18).toString());
         console.log("Mining...", mint.hash);
         await mint.wait();
         setMinted(true)
+        checkNftContract()
       } else {
         console.log("Ethereum object doesn't exist!")
       }
@@ -223,15 +228,28 @@ export default function App() {
             {currentAccount && <Button disabled={claimed} loading={claimedLoading} onClick={claim}>
               {claimed ? 'Claimed' : 'Claim'}
             </Button>}
-          </>}
-          {
-            current == 1 && 
-            <>
+          </>
+        }
+        {
+          current == 1 && 
+          <>
             {currentAccount && <Button disabled={minted} loading={claimedLoading} onClick={mint}>
               {minted ? 'Minted' : 'Mint'}
             </Button>}
           </>
-          }
+        }
+        {
+          current == 2 && 
+          <>
+            {currentAccount &&
+              <Result
+                status="success"
+                title="Successfully Minted Your NFTs!"
+                subTitle="Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait."
+              />
+            }
+          </>
+        }
       </div>
       <div className="steps-action">
         {current < steps.length - 1 && (
