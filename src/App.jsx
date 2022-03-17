@@ -9,6 +9,7 @@ import { Steps, Button, message, Statistic, Row, Col, Result } from 'antd';
 const { Step } = Steps;
 import abi from "./utils/Task.json";
 import nftAbi from "./utils/TASKNFT.json";
+import { useMemo } from "react";
 const tokenContractABI = abi.abi
 const nftContractABI = nftAbi.abi
 function randomString(e) {    
@@ -123,9 +124,9 @@ export default function App() {
         const supply = await taskNftContract.MAX_SUPPLY();
         const totalMinted = await taskNftContract.checkTotalMined();
         const isMinted = currentAccount ? await taskNftContract.numberMinted(currentAccount) : false
-        isMinted && setMinted(ethers.utils.formatUnits(isMinted, 18) !== '0.0')
-        console.log('isMinted ===>',isMinted)
-        // setCurrent(isMinted ? 2 : (claimed ? 1 : 0))
+        const mintNumber = ethers.utils.formatUnits(isMinted || 0, 18)
+        isMinted && setMinted(mintNumber !== '0.0')
+        setCurrent(mintNumber !== '0.0' ? 2 : (claimed ? 1 : 0))
         setTotalNft(supply.toString())
         setMintedNft(totalMinted.toString())
       } else {
@@ -196,6 +197,16 @@ export default function App() {
       setClaimedLoading(false)
     }
   }
+
+  const currentDisable = useMemo(() => {
+    if (current == 0 && !claimed) {
+      return true
+    }
+    if (current == 1 && !minted) {
+      return true
+    }
+    return false
+  },[current, claimed, minted])
   
   return (
     <div style={{ margin: '20px 80px' }}>
@@ -256,19 +267,19 @@ export default function App() {
         }
       </div>
       <div className="steps-action">
+      {current > 0 && (
+          <Button style={{ margin: '0 8px' }} onClick={() => prev()}>
+            Previous
+          </Button>
+        )}
         {current < steps.length - 1 && (
-          <Button type="primary" onClick={() => next()}>
+          <Button disabled={currentDisable} type="primary" onClick={() => next()}>
             Next
           </Button>
         )}
         {current === steps.length - 1 && (
           <Button type="primary" onClick={() => message.success('Processing complete!')}>
             Done
-          </Button>
-        )}
-        {current > 0 && (
-          <Button style={{ margin: '0 8px' }} onClick={() => prev()}>
-            Previous
           </Button>
         )}
       </div>
