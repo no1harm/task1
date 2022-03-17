@@ -176,9 +176,8 @@ export default function App() {
         const signer = provider.getSigner();
         const taskNftContract = new ethers.Contract(nftContractAddress, nftContractABI, signer);
         const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
-        console.log('taskNftContract ==>', taskNftContract)
-        await taskTokenContract.approve(nftContractAddress, (50 * 10 ** 18).toString())
-        const mint = await taskNftContract.mint((1 * 10 ** 18).toString());
+        await taskTokenContract.approve(nftContractAddress, ethers.utils.parseEther('50'))
+        const mint = await taskNftContract.mint(ethers.utils.parseEther('1'));
         console.log("Mining...", mint.hash);
         await mint.wait();
         setMinted(true)
