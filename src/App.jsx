@@ -175,8 +175,13 @@ export default function App() {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const taskNftContract = new ethers.Contract(nftContractAddress, nftContractABI, signer);
-        const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
-        await taskTokenContract.approve(nftContractAddress, ethers.utils.parseEther('50'))
+        try {
+          const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
+          await taskTokenContract.approve(nftContractAddress, ethers.utils.parseEther('50'))
+        } catch (error) {
+          console.log('token approve error ===>',error)
+          return          
+        }
         const mint = await taskNftContract.mint(ethers.utils.parseEther('1'));
         console.log("Mining...", mint.hash);
         await mint.wait();
