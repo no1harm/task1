@@ -12,14 +12,6 @@ import nftAbi from "./utils/TASKNFT.json";
 import { useMemo } from "react";
 const tokenContractABI = abi.abi
 const nftContractABI = nftAbi.abi
-function randomString(e) {    
-    e = e || 32;
-    var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
-    a = t.length,
-    n = "";
-    for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
-    return 'random massage' + n
-}
 const steps = [
   {
     title: 'Claim',
@@ -37,14 +29,15 @@ const steps = [
 
 export default function App() {
   const [currentAccount, setCurrentAccount] = useState("");
-  const [allWaves, setAllWaves] = useState([]);
   const [current, setCurrent] = useState(0);
   const [claimed, setClaimed] = useState(false)
   const [totalToken, setTotalToken] = useState(0);
   const [claimedLoading, setClaimedLoading] = useState(false);
   const [minted,setMinted] = useState(false)
   const [totalNft,setTotalNft] = useState(0)
-  const [mintedNft,setMintedNft] = useState(0)
+  const [mintedNft, setMintedNft] = useState(0)
+  const [tokenContract,setTokenContract] = useState()
+  const [nftContract,setNftContract] = useState()
 
   const next = () => {
     setCurrent(current + 1);
@@ -102,7 +95,7 @@ export default function App() {
         const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
         const totalSupply = await taskTokenContract.totalSupply()
         const isClaimed = currentAccount ? await taskTokenContract.isClaimed(currentAccount) : false
-        // const approve = await taskTokenContract.approve(currentAccount, 50)
+        setTokenContract(taskTokenContract)
         setClaimed(isClaimed)
         setCurrent(isClaimed ? 1 : 0)
         setTotalToken(ethers.utils.formatUnits(totalSupply,18))
@@ -126,6 +119,7 @@ export default function App() {
         const isMinted = currentAccount ? await taskNftContract.numberMinted(currentAccount) : false
         const mintNumber = ethers.utils.formatUnits(isMinted || 0, 18)
         isMinted && setMinted(mintNumber !== '0.0')
+        setNftContract(taskNftContract)
         setCurrent(mintNumber !== '0.0' ? 2 : (claimed ? 1 : 0))
         setTotalNft(supply.toString())
         setMintedNft(totalMinted.toString())
@@ -150,12 +144,7 @@ export default function App() {
       setClaimedLoading(true)
       const { ethereum } = window;
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        console.log('signer==>', signer)
-        const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
-        // await taskTokenContract.approve(currentAccount, (50 * 10 ** 18).toString())
-        const claimTxn = await taskTokenContract.claim()
+        const claimTxn = await tokenContract.claim()
         console.log("Mining...", claimTxn.hash);
         await claimTxn.wait();
         checkTokenContract()
@@ -173,17 +162,13 @@ export default function App() {
     try {
       const { ethereum } = window;
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const taskNftContract = new ethers.Contract(nftContractAddress, nftContractABI, signer);
         try {
-          const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
-          await taskTokenContract.approve(nftContractAddress, ethers.utils.parseEther('50'))
+          await tokenContract.approve(nftContractAddress, ethers.utils.parseEther('50'))
         } catch (error) {
           console.log('token approve error ===>',error)
           return          
         }
-        const mint = await taskNftContract.mint(ethers.utils.parseEther('1'));
+        const mint = await nftContract.mint(ethers.utils.parseEther('1'));
         console.log("Mining...", mint.hash);
         await mint.wait();
         setMinted(true)
