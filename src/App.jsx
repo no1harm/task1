@@ -5,7 +5,7 @@ import './App.css';
 const contractAddress = '0xDbCd3d2547730A295D71Eceb25790D6E4F4F4874';
 const nftContractAddress = '0x2dA7C836B5282824F5352A1fD3Aae64a780e0FA3'
 // import abi from "./utils/WavePortal.json";
-import { Steps, Button, message, Statistic, Row, Col, Result } from 'antd';
+import { Steps, Button, message, Statistic, Row, Col, Result, Modal } from 'antd';
 const { Step } = Steps;
 import abi from "./utils/Task.json";
 import nftAbi from "./utils/TASKNFT.json";
@@ -38,6 +38,7 @@ export default function App() {
   const [mintedNft, setMintedNft] = useState(0)
   const [tokenContract,setTokenContract] = useState()
   const [nftContract,setNftContract] = useState()
+  const [isModalVisible,setIsModalVisible] = useState(false)
 
   const next = () => {
     setCurrent(current + 1);
@@ -92,6 +93,12 @@ export default function App() {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
+        const { chainId } = await provider.getNetwork()
+        console.log('provider',provider)
+        if(chainId != '4'){
+          setIsModalVisible(true)
+          throw('wrong network')
+        }
         const taskTokenContract = new ethers.Contract(contractAddress, tokenContractABI, signer);
         const totalSupply = await taskTokenContract.totalSupply()
         const isClaimed = currentAccount ? await taskTokenContract.isClaimed(currentAccount) : false
@@ -196,6 +203,16 @@ export default function App() {
     }
     return false
   },[current, claimed, minted])
+
+  const handleOk = async ()=>{
+    const data = await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0x4' }],
+    });
+    if(!data){
+      window.location.reload()
+    }
+  }
   
   return (
     <div style={{ margin: '20px 80px' }}>
@@ -272,6 +289,12 @@ export default function App() {
           </Button>
         )}
       </div>
+      <Modal title="Warning" visible={isModalVisible} cancelText="" 
+        footer={[<Button onClick={handleOk} type="primary" >
+        Switch
+        </Button>]} closable={false}>
+        <p>Please Switch to Rinkeby</p>
+      </Modal>
     </div>
   );
 }
