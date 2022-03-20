@@ -266,7 +266,7 @@ export default function App() {
               <Result
                 status="success"
                 title="Successfully Minted Your NFTs!"
-                subTitle="Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait."
+                subTitle={<a href="https://testnets.opensea.io/account" target="_blank">Go To Opensea</a>}
               />
             }
           </>
