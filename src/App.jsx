@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import './App.css';
 // const contractAddress = "0x16A3137947773Db862fFc537Ce3A1feD4e895A49"
-const contractAddress = '0x69BDc976D18b6CB12842C2345C66510e1A9143c6';
-const nftContractAddress = '0x3d8608e781D57781070e9C082736410e36C8D685'
+const contractAddress = '0xDbCd3d2547730A295D71Eceb25790D6E4F4F4874';
+const nftContractAddress = '0x2dA7C836B5282824F5352A1fD3Aae64a780e0FA3'
 // import abi from "./utils/WavePortal.json";
 import { Steps, Button, message, Statistic, Row, Col, Result } from 'antd';
 const { Step } = Steps;
@@ -98,7 +98,6 @@ export default function App() {
         setTokenContract(taskTokenContract)
         setClaimed(isClaimed)
         setCurrent(isClaimed ? 1 : 0)
-        console.log('isClaimed',isClaimed)
         setTotalToken(ethers.utils.formatUnits(totalSupply,18))
       } else {
         console.log("Ethereum object doesn't exist!")
@@ -121,8 +120,6 @@ export default function App() {
         const mintNumber = ethers.utils.formatUnits(isMinted || 0, 18)
         isMinted && setMinted(mintNumber !== '0.0')
         setNftContract(taskNftContract)
-        console.log('claimed',claimed)
-        console.log('xxxx',mintNumber !== '0.0' ? 2 : (claimed ? 1 : 0))
         setCurrent(mintNumber !== '0.0' ? 2 : (claimed ? 1 : 0))
         setTotalNft(supply.toString())
         setMintedNft(totalMinted.toString())
@@ -147,6 +144,8 @@ export default function App() {
       setClaimedLoading(true)
       const { ethereum } = window;
       if (ethereum) {
+        const approve = await tokenContract.approve(contractAddress, ethers.utils.parseEther('50'))
+        await approve.wait();
         const claimTxn = await tokenContract.claim()
         console.log("Claim...", claimTxn.hash);
         await claimTxn.wait();
@@ -167,8 +166,7 @@ export default function App() {
       const { ethereum } = window;
       if (ethereum) {
         try {
-          const approve = await tokenContract.approve(contractAddress, ethers.utils.parseEther('50'))
-          console.log("approve...", approve.hash);
+          const approve = await tokenContract.approve(nftContractAddress, ethers.utils.parseEther('50'))
           await approve.wait();
         } catch (error) {
           console.log('token approve error ===>',error)
