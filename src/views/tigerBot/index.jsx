@@ -11,7 +11,8 @@ export default function TigerBot() {
     luckyNumber: undefined,
     round: 3,
     userExtras: 0,
-    maxExtrasLimit: 2
+    maxExtrasLimit: 2,
+    numberLoading: true
   })
 
   const generateRandomList = () => {
@@ -48,6 +49,9 @@ export default function TigerBot() {
       })
       node.play()
     })
+    setTimeout(() => {
+      setState({numberLoading:false})
+    },500)
   }
 
   const replaceList = () => {
@@ -70,8 +74,10 @@ export default function TigerBot() {
 
   const start = () => {
     setState({ list: generateRandomList() })
-    setState({list: replaceList()})
-    nodeAnimation()
+    setState({ list: replaceList() })
+    setTimeout(() => {
+      nodeAnimation()
+    },1000)
   }
 
   const setLuckyNumber = () => {
@@ -101,7 +107,7 @@ export default function TigerBot() {
               {item.map((i) => {
                 return (
                   <div className="contentWrapper" key={i}>
-                    <h3 className="content">{i}</h3>
+                    <h3 className="content">{state.numberLoading ? '00' : i}</h3>
                   </div>
                 )
               })}
