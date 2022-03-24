@@ -1,17 +1,28 @@
 import React from "react";
 import './index.css'
-import { shuffle } from 'lodash'
-import { useSetState } from 'ahooks'
+import { round, shuffle } from 'lodash'
+import { useMount, useSetState } from 'ahooks'
 import {  Button, Space } from 'antd';
 import { useEffect } from "react";
 
 export default function TigerBot() {
   const [state, setState] = useSetState({
-    list: [shuffle([...Array(100).keys()]), shuffle([...Array(100).keys()]), shuffle([...Array(100).keys()])],
+    list: [],
     luckyNumber: undefined,
     round: 3,
     userExtras: 0,
     maxExtrasLimit: 2
+  })
+
+  const generateRandomList = () => {
+    const list =  new Array(state.round).fill(round).map(i => {
+      return shuffle([...Array(100).keys()])
+    })
+    return list
+  }
+
+  useMount(() => {
+    setState({list: generateRandomList() })
   })
 
   const replaceListItem = (list) => {
@@ -58,6 +69,8 @@ export default function TigerBot() {
   },[state.luckyNumber,state.userExtras])
 
   const start = () => {
+    setState({ list: generateRandomList() })
+    setState({list: replaceList()})
     nodeAnimation()
   }
 
