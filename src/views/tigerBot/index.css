@@ -1,0 +1,53 @@
+.wrapper {
+  min-height: 500px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  height: 100px;
+  width: 100px;
+  z-index: 999;
+  color: "#fff";
+  overflow: hidden;
+  position: relative;
+  margin-right: 10px;
+}
+
+.pollContainer {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  /* animation-name: slide; */
+  /* animation-duration: 10s; */
+  /* animation-timing-function: ease-in-out; */
+  /* animation-direction: normal; */
+  /* animation-fill-mode: forwards; */
+}
+.contentWrapper {
+  height: 100%;
+  width: 100%;
+  padding: 5px 0;
+}
+.content {
+  line-height: 90px;
+  text-align: center;
+  background: #364d79;
+  color: "#fff" !important;
+}
+
+@keyframes slide {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% + 110px));
+  }
+}
