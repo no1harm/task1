@@ -1,14 +1,17 @@
 import React from "react";
 import './index.css'
 import { shuffle } from 'lodash'
-import { useMount, useSetState, useUpdateEffect } from 'ahooks'
+import { useSetState } from 'ahooks'
 import {  Button, Space } from 'antd';
 import { useEffect } from "react";
 
 export default function TigerBot() {
   const [state, setState] = useSetState({
     list: [shuffle([...Array(100).keys()]), shuffle([...Array(100).keys()]), shuffle([...Array(100).keys()])],
-    luckyNumber: undefined
+    luckyNumber: undefined,
+    round: 3,
+    userExtras: 0,
+    maxExtrasLimit: 2
   })
 
   const replaceListItem = (list) => {
@@ -36,20 +39,44 @@ export default function TigerBot() {
     })
   }
 
+  const replaceList = () => {
+    if (state.userExtras > 0) {
+      return state.list.map((item, index) => {
+        if (index < state.userExtras) {
+          return replaceListItem(item)
+        } else {
+          return item
+        }
+      })
+    }
+  }
+
   useEffect(() => {
     if (state.luckyNumber) {
-      setState({list:state.list.map((item) => {
-        return replaceListItem(item)
-      })})
+      setState({list: replaceList()})
     }
-  },[state.luckyNumber])
+  },[state.luckyNumber,state.userExtras])
 
   const start = () => {
     nodeAnimation()
   }
 
   const setLuckyNumber = () => {
-    setState({luckyNumber: 77})
+    if (state.userExtras < state.maxExtrasLimit) {
+      setState({luckyNumber: 77})
+      setState({ userExtras: state.userExtras + 1})
+    } else {
+      console.log('limited!')
+    }
+  }
+
+  const setUserExtras = () => {
+    if (state.userExtras < state.maxExtrasLimit) {
+      setState({luckyNumber: 88})
+      setState({userExtras: state.userExtras + 1})
+    } else {
+      console.log('limited!')
+    }
   }
   
   return (
@@ -76,6 +103,9 @@ export default function TigerBot() {
           </Button>
           <Button type="primary" onClick={() => setLuckyNumber()}>
             SET LUCKY NUMBER
+          </Button>
+          <Button type="primary" onClick={() => setUserExtras()}>
+            SET USER EXTRAS
           </Button>
         </Space>
       </div>
