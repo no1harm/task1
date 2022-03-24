@@ -1,69 +1,61 @@
 import React from "react";
 import './index.css'
 import { shuffle } from 'lodash'
-import { useMount, useUpdateEffect } from 'ahooks'
-import { useState } from "react";
+import { useMount, useSetState, useUpdateEffect } from 'ahooks'
+import {  Button, Space } from 'antd';
+import { useEffect } from "react";
 
 export default function TigerBot() {
-  const [list, setList] = useState([shuffle([...Array(100).keys()]),shuffle([...Array(100).keys()]),shuffle([...Array(100).keys()])])
-  useMount(() => {
-    setList(list.map((item) => {
-      return replaceListItem(item,66)
-    }))
+  const [state, setState] = useSetState({
+    list: [shuffle([...Array(100).keys()]), shuffle([...Array(100).keys()]), shuffle([...Array(100).keys()])],
+    luckyNumber: undefined
   })
 
-  useUpdateEffect(() => {
-    nodeAnimation()
-  },list)
-
-  const replaceListItem = (list, key) => {
-    const listx = [...list]
-    const index = listx.findIndex((i) => i == key)
-    listx.splice(index, 1)
-    listx.push(key)
-    return listx
+  const replaceListItem = (list) => {
+    if (state.luckyNumber) {
+      const listx = [...list]
+      const index = listx.findIndex((i) => i == state.luckyNumber)
+      listx.splice(index, 1)
+      listx.push(state.luckyNumber)
+      return listx
+    }
   }
 
   const nodeAnimation = () => {
-    const node0 = document.getElementById('node0').animate([
-      {transform: 'translateY(0)'},
-      {transform: 'translateY(calc(-100% + 110px))'},
-    ], {
-      fill: 'forwards',
-      duration: 10000,
-      delay: 1000,
-      easing: 'ease-in-out'
+    state.list.map((item,index) => {
+      const node = document.getElementById(`node${index}`).animate([
+        {transform: 'translateY(0)'},
+        {transform: 'translateY(calc(-100% + 110px))'},
+      ], {
+        fill: 'forwards',
+        duration: 10000,
+        delay: (index + 1 )* 1000,
+        easing: 'ease-in-out'
+      })
+      node.play()
     })
+  }
 
-    const node1 = document.getElementById('node1').animate([
-      {transform: 'translateY(0)'},
-      {transform: 'translateY(calc(-100% + 110px))'},
-    ], {
-      fill: 'forwards',
-      duration: 10000,
-      delay: 2000,
-      easing: 'ease-in-out'
-    })
+  useEffect(() => {
+    if (state.luckyNumber) {
+      setState({list:state.list.map((item) => {
+        return replaceListItem(item)
+      })})
+    }
+  },[state.luckyNumber])
 
-    const node2 = document.getElementById('node2').animate([
-      {transform: 'translateY(0)'},
-      {transform: 'translateY(calc(-100% + 110px))'},
-    ], {
-      fill: 'forwards',
-      duration: 10000,
-      delay: 3000,
-      easing: 'ease-in-out'
-    })
+  const start = () => {
+    nodeAnimation()
+  }
 
-    node0.play()
-    node1.play()
-    node2.play()
+  const setLuckyNumber = () => {
+    setState({luckyNumber: 77})
   }
   
   return (
     <div style={{ margin: '20px 80px' }}>
       <div className="wrapper">
-        {list.map((item,index) => {
+        {state.list.map((item,index) => {
           return <div key={index} className="container">
             <div className="pollContainer" id={`node${index}`}>
               {item.map((i) => {
@@ -76,6 +68,16 @@ export default function TigerBot() {
             </div>
           </div>
         })}
+      </div>
+      <div className="btnWrapper">
+        <Space>
+          <Button type="primary" onClick={() => start()}>
+            GO!
+          </Button>
+          <Button type="primary" onClick={() => setLuckyNumber()}>
+            SET LUCKY NUMBER
+          </Button>
+        </Space>
       </div>
     </div>
   );
