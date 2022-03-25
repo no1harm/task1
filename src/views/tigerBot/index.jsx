@@ -1,9 +1,11 @@
 import React from "react";
 import './index.css'
-import { round, shuffle } from 'lodash'
-import { useMount, useSetState } from 'ahooks'
+import { clone, round, shuffle } from 'lodash'
+import { useMount, useSetState  } from 'ahooks'
 import {  Button, Space } from 'antd';
 import { useEffect } from "react";
+import { map } from 'ramda'
+import { useCallback } from "react";
 
 export default function TigerBot() {
   const [state, setState] = useSetState({
@@ -12,7 +14,10 @@ export default function TigerBot() {
     round: 3,
     userExtras: 0,
     maxExtrasLimit: 2,
-    numberLoading: true
+    resultShow: false,
+    resultList: [],
+    isFirst: true,
+    loading:false
   })
 
   const generateRandomList = () => {
@@ -23,21 +28,20 @@ export default function TigerBot() {
   }
 
   useMount(() => {
-    setState({list: generateRandomList() })
+    setState({ list: generateRandomList() })
   })
 
-  const replaceListItem = (list) => {
-    if (state.luckyNumber) {
-      const listx = [...list]
-      const index = listx.findIndex((i) => i == state.luckyNumber)
-      listx.splice(index, 1)
-      listx.push(state.luckyNumber)
-      return listx
-    }
+  const clearNodeAnimation = () => {
+    const nodeList = state.list.map((item, index) => {
+      const node = document.getElementById(`node${index}`).animate([])
+      node.finish()
+      return node
+    })
   }
 
-  const nodeAnimation = () => {
-    state.list.map((item,index) => {
+  const nodeAnimation = useCallback(() => {
+    setState({loading:false})
+    const nodeList = clone(state.list).map((item, index) => {
       const node = document.getElementById(`node${index}`).animate([
         {transform: 'translateY(0)'},
         {transform: 'translateY(calc(-100% + 110px))'},
@@ -48,36 +52,64 @@ export default function TigerBot() {
         easing: 'ease-in-out'
       })
       node.play()
+      if (index == 0) {
+        setTimeout(() => {
+          setState({resultShow:false})
+        }, 1500)
+      }
+      return node
     })
-    setTimeout(() => {
-      setState({numberLoading:false})
-    },500)
-  }
-
-  const replaceList = () => {
-    if (state.userExtras > 0) {
-      return state.list.map((item, index) => {
-        if (index < state.userExtras) {
-          return replaceListItem(item)
-        } else {
-          return item
-        }
+    
+    nodeList[nodeList.length - 1].onfinish = event => {
+      setState({
+        resultShow:true
       })
     }
+  },[state.list])
+
+  const generateResult = () => {
+    const resultList = map((item) => {
+      return item[item.length -1]
+    }, state.list)
+    setState({
+      resultList
+    })
   }
 
   useEffect(() => {
-    if (state.luckyNumber) {
-      setState({list: replaceList()})
+    if (state.list) {
+      generateResult()
     }
-  },[state.luckyNumber,state.userExtras])
+  },[state.list])
+
+  const replaceList = (list) => {
+    return clone(state.list).map((item, index) => {
+      return replaceListItem(item, list[index])
+    },)
+  }
+
+  const replaceListItem = (list,key) => {
+    const listx = [...list]
+    const index = listx.findIndex((i) => i == key)
+    listx.splice(index, 1)
+    listx.push(key)
+    return listx
+  }
 
   const start = () => {
-    setState({ list: generateRandomList() })
-    setState({ list: replaceList() })
-    setTimeout(() => {
-      nodeAnimation()
-    },1000)
+    if (state.isFirst) {
+      setState({ list: replaceList([77,89,9]) })
+      setTimeout(() => {
+        nodeAnimation()
+      })
+      setState({isFirst:false})
+    } else {
+      setState({ list: generateRandomList(), loading: true })
+      setState({ list: replaceList([66,66,99]) })
+      setTimeout(() => {
+        nodeAnimation()
+      }, 1000)
+    }
   }
 
   const setLuckyNumber = () => {
@@ -99,15 +131,15 @@ export default function TigerBot() {
   }
   
   return (
-    <div style={{ margin: '20px 80px' }}>
+    <div className="botWrapper" style={{ margin: '20px 80px' }}>
       <div className="wrapper">
-        {state.list.map((item,index) => {
+        {state.loading ? null : state.list.map((item,index) => {
           return <div key={index} className="container">
             <div className="pollContainer" id={`node${index}`}>
               {item.map((i) => {
                 return (
                   <div className="contentWrapper" key={i}>
-                    <h3 className="content">{state.numberLoading ? '00' : i}</h3>
+                    <h3 className="content">{ i}</h3>
                   </div>
                 )
               })}

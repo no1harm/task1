@@ -1,9 +1,13 @@
+.botWrapper {
+  position: relative;
+}
 .wrapper {
   min-height: 200px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .container {
@@ -16,6 +20,15 @@
   margin-right: 10px;
 }
 
+.wrapper#node-result {
+  z-index: 1000;
+  border: 1px solid red;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
 .pollContainer {
   display: flex;
   flex-direction: column;
@@ -26,6 +39,7 @@
   right: 0;
   background-color: #fff;
 }
+
 .contentWrapper {
   height: 100%;
   width: 100%;
