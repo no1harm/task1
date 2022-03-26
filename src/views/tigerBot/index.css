@@ -2,6 +2,17 @@
 
 .botWrapper {
   position: relative;
+  display: flex;
+  flex-direction: row;
+}
+.botWrapper .left{
+  width: 100%;
+}
+
+.botWrapper .right{
+  width: 500px;
+  min-height: 500px;
+  flex-shrink: 0;
 }
 .wrapper {
   width: 157px;
@@ -71,6 +82,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 50px;
 }
 
 .bot{
@@ -86,3 +98,15 @@
   left: 124px;
 }
 
+
+.bottom-margin{
+  margin-bottom: 10px;
+}
+
+.list-custom{
+ font-size: 12px;
+}
+
+.list-custom li{
+  text-align: left;
+}
