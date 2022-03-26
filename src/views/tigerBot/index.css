@@ -10,7 +10,7 @@
 }
 
 .botWrapper .right{
-  width: 500px;
+  width: 600px;
   min-height: 500px;
   flex-shrink: 0;
 }
@@ -109,4 +109,15 @@
 
 .list-custom li{
   text-align: left;
+}
+
+.badges{
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+section .icons-custom{
+  display: inline;
+  margin-right: 10px !important; 
 }

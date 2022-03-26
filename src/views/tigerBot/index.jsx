@@ -159,8 +159,6 @@ export default function TigerBot() {
           <Space>
             <button type="button" class="nes-btn is-primary" onClick={() => start()}>GO!</button>
             <button type="button" class="nes-btn is-primary" onClick={() => start()}>CONNECT</button>
-            <button type="button" class="nes-btn is-primary" onClick={() => setLuckyNumber()}>SET LUCKY NUMBER!</button>
-            <button type="button" class="nes-btn is-primary" onClick={() => setUserExtras()}>SET USER EXTRAS!</button>
           </Space>
         </div>
       </div>
@@ -188,7 +186,7 @@ export default function TigerBot() {
           </ul>
         </div>
 
-        <div class="nes-container with-title is-centered">
+        <div class="nes-container with-title is-centered bottom-margin">
           <p class="title">Your Status</p>
           <ul class="nes-list is-disc list-custom">
             <li>Extras: <span class="nes-text is-success">0</span></li>
@@ -197,6 +195,25 @@ export default function TigerBot() {
             <li>Totol Play Round: <span class="nes-text is-success">0</span></li>
           </ul>
         </div>
+
+        <div class="nes-container with-title is-centered bottom-margin">
+          <p class="title">Increase Win Rate!</p>
+          <button type="button" class="nes-btn is-primary" style={{marginBottom:10}} onClick={() => setUserExtras()}>SET YOUR EXTRAS!</button>
+          <button type="button" class="nes-btn is-primary" onClick={() => setLuckyNumber()}>SET LUCKY NUMBER!</button>
+        </div>
+      </div>
+      <div className="badges">
+      <section class="icon-list">
+        <a href="https://twitter.com/no1harm" className="icons-custom">
+          <i class="nes-icon twitter is-medium"></i>
+        </a>
+        <a href="https://github.com/no1harm" className="icons-custom">
+          <i class="nes-icon github is-medium"></i>
+        </a>
+        <a href="mailto:chen09869@gmail.com" className="icons-custom">
+          <i class="nes-icon gmail is-medium"></i>
+        </a>
+      </section>
       </div>
     </div>
   );
