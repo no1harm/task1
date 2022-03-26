@@ -45,7 +45,7 @@ export default function TigerBot() {
     const nodeList = clone(state.list).map((item, index) => {
       const node = document.getElementById(`node${index}`).animate([
         {transform: 'translateY(0)'},
-        {transform: 'translateY(calc(-100% + 60px))'},
+        {transform: 'translateY(calc(-100% + 55px))'},
       ], {
         fill: 'forwards',
         duration: 10000,
@@ -149,6 +149,7 @@ export default function TigerBot() {
       <div className="botContainer">
         <div className="bot">
           <img src={bot} alt="bot" />
+          <div className="bgc"></div>
           <div className="wrapper">
             {state.loading ? null : state.list.map((item,index) => {
               return <div key={index} className="container">
