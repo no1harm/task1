@@ -6,6 +6,7 @@ import {  Button, Space } from 'antd';
 import { useEffect } from "react";
 import { map } from 'ramda'
 import { useCallback } from "react";
+import bot from '../../assets/images/bot.jpg'
 
 export default function TigerBot() {
   const [state, setState] = useSetState({
@@ -44,7 +45,7 @@ export default function TigerBot() {
     const nodeList = clone(state.list).map((item, index) => {
       const node = document.getElementById(`node${index}`).animate([
         {transform: 'translateY(0)'},
-        {transform: 'translateY(calc(-100% + 110px))'},
+        {transform: 'translateY(calc(-100% + 60px))'},
       ], {
         fill: 'forwards',
         duration: 10000,
@@ -132,21 +133,6 @@ export default function TigerBot() {
   
   return (
     <div className="botWrapper" style={{ margin: '20px 80px' }}>
-      <div className="wrapper">
-        {state.loading ? null : state.list.map((item,index) => {
-          return <div key={index} className="container">
-            <div className="pollContainer" id={`node${index}`}>
-              {item.map((i) => {
-                return (
-                  <div className="contentWrapper" key={i}>
-                    <h3 className="content">{ i}</h3>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        })}
-      </div>
       <div className="btnWrapper">
         <Space>
           <Button type="primary" onClick={() => start()}>
@@ -159,6 +145,26 @@ export default function TigerBot() {
             SET USER EXTRAS
           </Button>
         </Space>
+      </div>
+      <div className="botContainer">
+        <div className="bot">
+          <img src={bot} alt="bot" />
+          <div className="wrapper">
+            {state.loading ? null : state.list.map((item,index) => {
+              return <div key={index} className="container">
+                <div className="pollContainer" id={`node${index}`}>
+                  {item.map((i) => {
+                    return (
+                      <div className="contentWrapper" key={i}>
+                        <h3 className="content">{ i}</h3>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
