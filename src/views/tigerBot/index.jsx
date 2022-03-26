@@ -2,7 +2,7 @@ import React from "react";
 import './index.css'
 import { clone, round, shuffle } from 'lodash'
 import { useMount, useSetState  } from 'ahooks'
-import {  Button, Space } from 'antd';
+import { Space } from 'antd';
 import { useEffect } from "react";
 import { map } from 'ramda'
 import { useCallback } from "react";
@@ -135,15 +135,9 @@ export default function TigerBot() {
     <div className="botWrapper" style={{ margin: '20px 80px' }}>
       <div className="btnWrapper">
         <Space>
-          <Button type="primary" onClick={() => start()}>
-            GO!
-          </Button>
-          <Button type="primary" onClick={() => setLuckyNumber()}>
-            SET LUCKY NUMBER
-          </Button>
-          <Button type="primary" onClick={() => setUserExtras()}>
-            SET USER EXTRAS
-          </Button>
+          <button type="button" class="nes-btn is-primary" onClick={() => start()}>GO!</button>
+          <button type="button" class="nes-btn is-primary" onClick={() => setLuckyNumber()}>SET LUCKY NUMBER!</button>
+          <button type="button" class="nes-btn is-primary" onClick={() => setUserExtras()}>SET USER EXTRAS!</button>
         </Space>
       </div>
       <div className="botContainer">

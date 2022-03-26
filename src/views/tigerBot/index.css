@@ -1,3 +1,5 @@
+@import "../../../node_modules/nes.css/css/nes.css";
+
 .botWrapper {
   position: relative;
 }
@@ -55,6 +57,7 @@
   background: rgb(80, 85, 115);
   color:rgb(225, 190, 95);
   border: 3px solid rgb(225, 190, 95);
+  font-size: 13px;
 }
 
 .btnWrapper {
@@ -72,10 +75,6 @@
 
 .bot{
   position: relative;
-  border: 1px solid red;
-}
-
-.bot >img{
 }
 
 .bot >.bgc{

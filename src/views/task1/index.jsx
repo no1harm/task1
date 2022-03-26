@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { ethers } from "ethers";
 const contractAddress = '0xDbCd3d2547730A295D71Eceb25790D6E4F4F4874';
 const nftContractAddress = '0x2dA7C836B5282824F5352A1fD3Aae64a780e0FA3'
+import "nes.css/css/nes.min.css";
 import { Steps, Button, message, Statistic, Row, Col, Result, Modal } from 'antd';
 const { Step } = Steps;
 import abi from "./abi/Task.json";

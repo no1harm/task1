@@ -1214,6 +1214,11 @@ nanoid@^3.3.1:
   resolved "https://registry.npmmirror.com/nanoid/-/nanoid-3.3.1.tgz#6347a18cac88af88f58af0b3594b723d5e99bb35"
   integrity sha512-n6Vs/3KGyxPQd6uO0eH4Bv0ojGSUvuLlIHtC3Y0kEO23YRge8H9x1GCzLn28YX0H66pMkxuaeESFq4tKISKwdw==
 
+nes.css@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.npmjs.org/nes.css/-/nes.css-2.3.0.tgz#112c834dd8a18cda570ab76d66b26b078a94c919"
+  integrity sha512-lCFZs9vj3f5RVdbvTL/kSxiYsOARwSeAdJaMNo+bCgmWOO9x8ay7QpT4yQVKHy3r5Dttzd0uqVdpt3fvvx6EpQ==
+
 node-releases@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmmirror.com/node-releases/-/node-releases-2.0.2.tgz#7139fe71e2f4f11b47d4d2986aaf8c48699e0c01"
