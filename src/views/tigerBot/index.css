@@ -5,11 +5,11 @@
   display: flex;
   flex-direction: row;
 }
-.botWrapper .left{
+.botWrapper .left {
   width: 100%;
 }
 
-.botWrapper .right{
+.botWrapper .right {
   width: 600px;
   min-height: 500px;
   flex-shrink: 0;
@@ -66,7 +66,7 @@
   align-items: center;
   text-align: center;
   background: rgb(80, 85, 115);
-  color:rgb(225, 190, 95);
+  color: rgb(225, 190, 95);
   border: 3px solid rgb(225, 190, 95);
   font-size: 13px;
 }
@@ -78,18 +78,18 @@
   align-items: center;
 }
 
-.botContainer{
+.botContainer {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 50px;
 }
 
-.bot{
+.bot {
   position: relative;
 }
 
-.bot >.bgc{
+.bot > .bgc {
   width: 157px;
   height: 108px;
   background-color: rgb(80, 85, 115);
@@ -98,26 +98,81 @@
   left: 124px;
 }
 
-
-.bottom-margin{
+.bottom-margin {
   margin-bottom: 10px;
 }
 
-.list-custom{
- font-size: 12px;
+.list-custom {
+  font-size: 12px;
 }
 
-.list-custom li{
+.list-custom li {
   text-align: left;
 }
 
-.badges{
+.badges {
   position: absolute;
   top: 0;
   left: 0;
 }
 
-section .icons-custom{
+section .icons-custom {
   display: inline;
-  margin-right: 10px !important; 
+  margin-right: 10px !important;
+}
+
+.loadingCustom {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 50px;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loadingCustom .bar {
+  border: 6px solid black;
+  height: 28px;
+  width: 100%;
+  background-color: #fff;
+  position: relative;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.loadingCustom .bar::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  border: 3px solid #fff;
+  top: 0;
+  left: 0;
+}
+
+.bar .progress {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgb(225, 190, 95);
+  animation-name: progressBar;
+  animation-duration: 3s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+}
+
+@keyframes progressBar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }

@@ -130,6 +130,14 @@ export default function TigerBot() {
       console.log('limited!')
     }
   }
+
+  const loadingNode = (
+    <div className="loadingCustom">
+      <div className="bar">
+        <div className="progress"></div>
+      </div>
+    </div>
+  )
   
   return (
     <div className="botWrapper" style={{ margin: '20px 80px' }}>
@@ -139,7 +147,7 @@ export default function TigerBot() {
             <img src={bot} alt="bot" />
             <div className="bgc"></div>
             <div className="wrapper">
-              {state.loading ? null : state.list.map((item,index) => {
+              {state.loading ? loadingNode : state.list.map((item,index) => {
                 return <div key={index} className="container">
                   <div className="pollContainer" id={`node${index}`}>
                     {item.map((i) => {
