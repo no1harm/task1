@@ -9,6 +9,8 @@ import { useCallback } from "react";
 import bot from '../../assets/images/bot.jpg'
 import { copyString } from '../../utils/index'
 
+const contractAddress = '0xa06D778a192CAfbB8592faFe0A8A8e9f147C2b02'
+
 const winners = [{key:'0x164df54641...',value:0.05},{key:'0x67964sdf...',value:1.22},{key:'0x46974s6fs...',value:33.2}]
 const players = ['0x164df54641...', '0x67964sdf...', '0x46974s6fs...']
 const contacts = [
@@ -236,17 +238,6 @@ export default function TigerBot() {
           </div>
         </div>
         <div className="badges">
-        <section class="icon-list">
-          <a href="https://twitter.com/no1harm" className="icons-custom">
-            <i class="nes-icon twitter is-medium"></i>
-          </a>
-          <a href="https://github.com/no1harm" className="icons-custom">
-            <i class="nes-icon github is-medium"></i>
-          </a>
-          <a href="mailto:chen09869@gmail.com" className="icons-custom">
-            <i class="nes-icon gmail is-medium"></i>
-          </a>
-        </section>
         </div>
       </div>
       <div className="boardBtn">
@@ -281,9 +272,9 @@ export default function TigerBot() {
             <div class="nes-container with-title is-centered ">
               <p class="title">Players</p>
               <div class="lists borderItem">
-                <ul class="nes-list is-disc list-custom">
+                <ul class="nes-list is-disc">
                   {map(item => {
-                    return <li key={item}>
+                    return <li key={item} style={{textAlign:'left'}}>
                       {item}
                     </li>
                   },players)}
