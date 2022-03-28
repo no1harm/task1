@@ -110,6 +110,26 @@
   text-align: left;
 }
 
+.borderItem {
+  height: 330px;
+  overflow-y: auto;
+}
+
+.borderItem::-webkit-scrollbar {
+  background-color: transparent;
+}
+
+.borderItem::-webkit-scrollbar-thumb {
+  width: 4px;
+  background-color: black;
+}
+
+.winner {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 .badges {
   position: absolute;
   top: 0;
@@ -174,5 +194,37 @@ section .icons-custom {
   }
   to {
     transform: translateX(0);
+  }
+}
+
+.boardBtn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
+  animation-name: updown;
+  animation-duration: 2s;
+  animation-fill-mode: backwards;
+  animation-direction: alternate-reverse;
+  animation-iteration-count: infinite;
+}
+
+.boardBtn > div {
+  font-size: 44px;
+  transform: rotate(90deg);
+}
+
+.boardBtn > div > span {
+  cursor: pointer;
+}
+
+@keyframes updown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(20px);
   }
 }
