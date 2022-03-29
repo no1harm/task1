@@ -2,13 +2,15 @@ import React from "react";
 import './index.css'
 import { clone, round, shuffle } from 'lodash'
 import { useMount, useSetState  } from 'ahooks'
-import { Space,Drawer,Row,Col,message } from 'antd';
+import { Space,Drawer,Row,Col,message,Modal,Button } from 'antd';
 import { useEffect } from "react";
-import { map } from 'ramda'
+import { isEmpty, isNil, map } from 'ramda'
 import { useCallback } from "react";
 import bot from '../../assets/images/bot.jpg'
 import { copyString } from '../../utils/index'
-
+import abi from "./abi/TigerBot.json";
+import { ethers } from "ethers";
+const contractAbi = abi.abi
 const contractAddress = '0xa06D778a192CAfbB8592faFe0A8A8e9f147C2b02'
 
 const winners = [{key:'0x164df54641...',value:0.05},{key:'0x67964sdf...',value:1.22},{key:'0x46974s6fs...',value:33.2}]
@@ -31,8 +33,48 @@ export default function TigerBot() {
     resultList: [],
     isFirst: true,
     loading: false,
-    boardVisible: false
+    boardVisible: false,
+    currentAccount: '',
+    modalVisible:false
   })
+
+  const checkIfWalletIsConnected = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (!ethereum) {
+        console.log("Make sure you have metamask!");
+        return;
+      } else {
+        console.log("We have the ethereum object", ethereum);
+      }
+      const accounts = await ethereum.request({ method: "eth_accounts" });
+      if (accounts.length !== 0) {
+        const account = accounts[0];
+        message.info(`${account} connected`)
+        setState({currentAccount:account})
+      } else {
+        console.log("No authorized account found")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const connectWallet = async () => {
+    try {
+      const { ethereum } = window;
+      if (!ethereum) {
+        alert("Get MetaMask!");
+        return;
+      }
+      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+      message.info(`${accounts[0]} connected`)
+      setState({currentAccount:accounts[0]})
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const generateRandomList = () => {
     const list =  new Array(state.round).fill(round).map(i => {
@@ -41,17 +83,35 @@ export default function TigerBot() {
     return list
   }
 
+  const checkContract = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const { chainId } = await provider.getNetwork()
+        if(chainId != '4'){
+          setState({ modalVisible:true })
+          throw('wrong network')
+        }
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useMount(() => {
     setState({ list: generateRandomList() })
   })
 
-  const clearNodeAnimation = () => {
-    const nodeList = state.list.map((item, index) => {
-      const node = document.getElementById(`node${index}`).animate([])
-      node.finish()
-      return node
-    })
-  }
+  useEffect(async() => {
+    if (!state.currentAccount) {
+      checkIfWalletIsConnected();
+    }
+    checkContract()
+  }, [state.currentAccount])
 
   const nodeAnimation = useCallback(() => {
     setState({loading:false})
@@ -164,6 +224,16 @@ export default function TigerBot() {
     }
     window.open(value)
   }
+
+  const handleOk = async ()=>{
+    const data = await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0x4' }],
+    });
+    if(!data){
+      window.location.reload()
+    }
+  }
   
   return (
     <>
@@ -192,8 +262,10 @@ export default function TigerBot() {
           </div>
           <div className="btnWrapper">
             <Space>
-              <button type="button" class="nes-btn is-primary" onClick={() => start()}>GO!</button>
-              <button type="button" class="nes-btn is-primary" onClick={() => start()}>CONNECT</button>
+              {isNil(state.currentAccount) || isEmpty(state.currentAccount)
+                ? <button type="button" class="nes-btn is-primary" onClick={() => connectWallet()}>CONNECT</button>
+                : <button type="button" class="nes-btn is-primary" onClick={() => start()}>GO!</button>
+              }
             </Space>
           </div>
         </div>
@@ -297,6 +369,9 @@ export default function TigerBot() {
           </Col>
         </Row>
       </Drawer>
+      <Modal title="Warning" visible={state.modalVisible} cancelText=""footer={[<Button onClick={handleOk} type="primary" >Switch</Button>]} closable={false}>
+        <p>Please Switch to Rinkeby</p>
+      </Modal>
     </>
   );
 }
