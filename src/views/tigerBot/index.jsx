@@ -1,15 +1,16 @@
 import React from "react";
 import './index.css'
-import { clone, round, shuffle } from 'lodash'
+import { shuffle } from 'lodash'
 import { useMount, useSetState  } from 'ahooks'
 import { Space,Drawer,Row,Col,message,Modal,Button } from 'antd';
 import { useEffect } from "react";
-import { isEmpty, isNil, map } from 'ramda'
+import { isEmpty, isNil, map, mergeRight, pick, clone } from 'ramda'
 import { useCallback } from "react";
 import bot from '../../assets/images/bot.jpg'
 import { copyString } from '../../utils/index'
 import abi from "./abi/TigerBot.json";
 import { ethers } from "ethers";
+import { useLayoutEffect } from "react";
 const contractAbi = abi.abi
 const contractAddress = '0xa06D778a192CAfbB8592faFe0A8A8e9f147C2b02'
 
@@ -29,13 +30,27 @@ export default function TigerBot() {
     round: 3,
     userExtras: 0,
     maxExtrasLimit: 2,
-    resultShow: false,
     resultList: [],
     isFirst: true,
     loading: false,
     boardVisible: false,
     currentAccount: '',
-    modalVisible:false
+    modalVisible: false,
+    contractData: undefined,
+    playDisable: false,
+    contractObject: {
+      maxExtra: 0,
+      pool: 0,
+      players:[]
+    },
+    userData: {
+      cantPlay: false,
+      extraCount: 0,
+      luckyNumber: undefined,
+      playCount: 0,
+      winCount: 0
+    },
+    currentResult:[]
   })
 
   const checkIfWalletIsConnected = async () => {
@@ -77,7 +92,7 @@ export default function TigerBot() {
   }
 
   const generateRandomList = () => {
-    const list =  new Array(state.round).fill(round).map(i => {
+    const list =  new Array(state.round).fill(state.round).map(i => {
       return shuffle([...Array(100).keys()])
     })
     return list
@@ -94,6 +109,31 @@ export default function TigerBot() {
           setState({ modalVisible:true })
           throw('wrong network')
         }
+        const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+        const maxExtras = await contract.maxExtra()
+        const pool = await contract.checkPoolFund()
+        const users = await contract.checkUsers()
+        const user = state.currentAccount ? await contract.checkUser(state.currentAccount) : {}
+        const object = pick(['cantPlay', 'extraCount', 'luckyNumber', 'playCount', 'winCount'], user)
+        contract.on("TigerResult",(_address,result,win,event) => {
+          const list = map(item => { return parseInt(ethers.utils.formatUnits(item, 0)) }, result)
+          setState({currentResult:list})
+        })
+        setState({
+          contractData: contract,
+          contractObject: mergeRight(state.contractObject, {
+            pool: ethers.utils.formatUnits(pool, 18),
+            maxExtra: ethers.utils.formatUnits(maxExtras, 0),
+            players: !isNil(users) && !isEmpty(users) && map(item=> {return item._address},users)
+          }),
+          userData: mergeRight(state.userData, {
+            cantPlay:object.cantPlay,
+            extraCount: object.extraCount && ethers.utils.formatUnits(object.extraCount, 0),
+            luckyNumber: object.luckyNumber ? ethers.utils.formatUnits(object.luckyNumber, 0) : undefined,
+            playCount: object.playCount && ethers.utils.formatUnits(object.playCount, 0),
+            winCount: object.winCount && ethers.utils.formatUnits(object.winCount, 0)
+          })
+        })
       } else {
         console.log("Ethereum object doesn't exist!")
       }
@@ -113,7 +153,7 @@ export default function TigerBot() {
     checkContract()
   }, [state.currentAccount])
 
-  const nodeAnimation = useCallback(() => {
+  const nodeAnimation = () => {
     setState({loading:false})
     const nodeList = clone(state.list).map((item, index) => {
       const node = document.getElementById(`node${index}`).animate([
@@ -126,20 +166,14 @@ export default function TigerBot() {
         easing: 'ease-in-out'
       })
       node.play()
-      if (index == 0) {
-        setTimeout(() => {
-          setState({resultShow:false})
-        }, 1500)
-      }
       return node
     })
-    
     nodeList[nodeList.length - 1].onfinish = event => {
       setState({
-        resultShow:true
+        playDisable:false
       })
     }
-  },[state.list])
+  }
 
   const generateResult = () => {
     const resultList = map((item) => {
@@ -170,16 +204,28 @@ export default function TigerBot() {
     return listx
   }
 
-  const start = () => {
+  const trigger = async () => {
+    setState({ playDisable: true,loading: true })
+    const result = await state.contractData.play({value: ethers.utils.parseEther("0.01")})
+    await result.wait();
+  }
+  
+  useLayoutEffect(() => {
+    if (!isNil(state.currentResult) && !isEmpty(state.currentResult)) {
+      start()
+    }
+  },[state.currentResult])
+
+  const start = async () => {
     if (state.isFirst) {
-      setState({ list: replaceList([77,89,9]) })
+      setState({ list: replaceList(state.currentResult) })
       setTimeout(() => {
         nodeAnimation()
-      })
+      },1000)
       setState({isFirst:false})
     } else {
-      setState({ list: generateRandomList(), loading: true })
-      setState({ list: replaceList([66,66,99]) })
+      setState({ list: generateRandomList(), playDisable: true, loading:true })
+      setState({ list: replaceList(state.currentResult) })
       setTimeout(() => {
         nodeAnimation()
       }, 1000)
@@ -264,7 +310,7 @@ export default function TigerBot() {
             <Space>
               {isNil(state.currentAccount) || isEmpty(state.currentAccount)
                 ? <button type="button" class="nes-btn is-primary" onClick={() => connectWallet()}>CONNECT</button>
-                : <button type="button" class="nes-btn is-primary" onClick={() => start()}>GO!</button>
+                : <button type="button" class={`nes-btn ${state.playDisable ? 'is-disabled' : 'is-primary'}`} disabled={state.playDisable} onClick={() => trigger()}>GO!</button>
               }
             </Space>
           </div>
@@ -273,7 +319,7 @@ export default function TigerBot() {
 
           <div class="nes-container with-title is-centered bottom-margin">
             <p class="title">Pool</p>
-            <p style={{textAlign:'left',fontSize:42}}><i class="nes-icon trophy is-medium"></i>180ETH</p>
+            <p style={{ textAlign: 'left', fontSize: 42 }}><i class="nes-icon trophy is-medium"></i>{ state.contractObject.pool }ETH</p>
           </div>
 
           <div class="nes-container with-title is-centered bottom-margin">
@@ -289,17 +335,17 @@ export default function TigerBot() {
             <ul class="nes-list is-disc list-custom">
               <li>You can set extras</li>
               <li>This sets one of the random numbers to your desired lucky number</li>
-              <li>Up to <span class="nes-text is-success">2</span> extras can be set</li>
+              <li>Up to <span class="nes-text is-success">{ state.contractObject.maxExtra }</span> extras can be set</li>
             </ul>
           </div>
 
           <div class="nes-container with-title is-centered bottom-margin">
             <p class="title">Your Status</p>
             <ul class="nes-list is-disc list-custom">
-              <li>Extras: <span class="nes-text is-success">0</span></li>
-              <li>LuckyNumber: <span class="nes-text is-success">null</span></li>
-              <li>WinRound: <span class="nes-text is-success">0</span></li>
-              <li>Totol Play Round: <span class="nes-text is-success">0</span></li>
+              <li>Extras: <span class="nes-text is-success">{ state.userData.extraCount }</span></li>
+              <li>LuckyNumber: <span class="nes-text is-success">{state.userData.luckyNumber}</span></li>
+              <li>WinRound: <span class="nes-text is-success">{ state.userData.winCount }</span></li>
+              <li>Totol Play Round: <span class="nes-text is-success">{ state.userData.playCount}</span></li>
             </ul>
           </div>
 
@@ -345,11 +391,11 @@ export default function TigerBot() {
               <p class="title">Players</p>
               <div class="lists borderItem">
                 <ul class="nes-list is-disc">
-                  {map(item => {
+                  {state.contractObject.players && map(item => {
                     return <li key={item} style={{textAlign:'left'}}>
                       {item}
                     </li>
-                  },players)}
+                  },state.contractObject.players)}
                 </ul>
               </div>
             </div>
