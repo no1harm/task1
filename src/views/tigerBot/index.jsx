@@ -110,36 +110,45 @@ export default function TigerBot() {
           throw('wrong network')
         }
         const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-        const maxExtras = await contract.maxExtra()
-        const pool = await contract.checkPoolFund()
-        const users = await contract.checkUsers()
-        const user = state.currentAccount ? await contract.checkUser(state.currentAccount) : {}
-        const object = pick(['cantPlay', 'extraCount', 'luckyNumber', 'playCount', 'winCount'], user)
-        contract.on("TigerResult",(_address,result,win,event) => {
+        contract.on("TigerResult",(_address,result) => {
           const list = map(item => { return parseInt(ethers.utils.formatUnits(item, 0)) }, result)
           setState({currentResult:list})
         })
         setState({
           contractData: contract,
-          contractObject: mergeRight(state.contractObject, {
-            pool: ethers.utils.formatUnits(pool, 18),
-            maxExtra: ethers.utils.formatUnits(maxExtras, 0),
-            players: !isNil(users) && !isEmpty(users) && map(item=> {return item._address},users)
-          }),
-          userData: mergeRight(state.userData, {
-            cantPlay:object.cantPlay,
-            extraCount: object.extraCount && ethers.utils.formatUnits(object.extraCount, 0),
-            luckyNumber: object.luckyNumber ? ethers.utils.formatUnits(object.luckyNumber, 0) : undefined,
-            playCount: object.playCount && ethers.utils.formatUnits(object.playCount, 0),
-            winCount: object.winCount && ethers.utils.formatUnits(object.winCount, 0)
-          })
         })
+        checkContractDetail()
       } else {
         console.log("Ethereum object doesn't exist!")
       }
     } catch (error) {
       console.log(error);
     }
+  }
+
+  const checkContractDetail = async () => {
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(contractAddress, contractAbi, signer);
+    const maxExtras = await contract.maxExtra()
+    const pool = await contract.checkPoolFund()
+    const users = await contract.checkUsers()
+    const user = state.currentAccount ? await contract.checkUser(state.currentAccount) : {}
+    const object = pick(['cantPlay', 'extraCount', 'luckyNumber', 'playCount', 'winCount'], user)
+    setState({
+      contractObject: mergeRight(state.contractObject, {
+        pool: ethers.utils.formatUnits(pool, 18),
+        maxExtra: ethers.utils.formatUnits(maxExtras, 0),
+        players: !isNil(users) && !isEmpty(users) && map(item=> {return item._address},users)
+      }),
+      userData: mergeRight(state.userData, {
+        cantPlay:object.cantPlay,
+        extraCount: object.extraCount && ethers.utils.formatUnits(object.extraCount, 0),
+        luckyNumber: object.luckyNumber ? ethers.utils.formatUnits(object.luckyNumber, 0) : undefined,
+        playCount: object.playCount && ethers.utils.formatUnits(object.playCount, 0),
+        winCount: object.winCount && ethers.utils.formatUnits(object.winCount, 0)
+      })
+    })
   }
 
   useMount(() => {
@@ -172,6 +181,7 @@ export default function TigerBot() {
       setState({
         playDisable:false
       })
+      checkContractDetail()
     }
   }
 
