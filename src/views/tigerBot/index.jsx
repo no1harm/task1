@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import './index.css'
 import { shuffle } from 'lodash'
 import { useMount, useSetState  } from 'ahooks'
@@ -13,9 +13,7 @@ import { ethers } from "ethers";
 import { useLayoutEffect } from "react";
 const contractAbi = abi.abi
 const contractAddress = '0xa06D778a192CAfbB8592faFe0A8A8e9f147C2b02'
-
 const winners = [{key:'0x164df54641...',value:0.05},{key:'0x67964sdf...',value:1.22},{key:'0x46974s6fs...',value:33.2}]
-const players = ['0x164df54641...', '0x67964sdf...', '0x46974s6fs...']
 const contacts = [
   { key: 'Twitter', value: 'https://twitter.com/no1harm', icon: 'twitter',shortName:'@no1harm' },
   { key: 'Github', value: 'https://github.com/no1harm', icon: 'github',shortName:'@no1harm' },
@@ -28,7 +26,6 @@ export default function TigerBot() {
     list: [],
     luckyNumber: undefined,
     round: 3,
-    userExtras: 0,
     maxExtrasLimit: 2,
     resultList: [],
     isFirst: true,
@@ -52,6 +49,12 @@ export default function TigerBot() {
     },
     currentResult:[]
   })
+
+  const addBindRef = useRef(null)
+
+  const refresh = () => {
+    checkContractDetail()
+  }
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -243,21 +246,22 @@ export default function TigerBot() {
   }
 
   const setLuckyNumber = () => {
-    if (state.userExtras < state.maxExtrasLimit) {
-      setState({luckyNumber: 77})
-      setState({ userExtras: state.userExtras + 1})
-    } else {
-      console.log('limited!')
-    }
+    // if (state.userExtras < state.maxExtrasLimit) {
+    //   setState({luckyNumber: 77})
+    //   setState({ userExtras: state.userExtras + 1})
+    // } else {
+    //   console.log('limited!')
+    // }
   }
 
   const setUserExtras = () => {
-    if (state.userExtras < state.maxExtrasLimit) {
-      setState({luckyNumber: 88})
-      setState({userExtras: state.userExtras + 1})
-    } else {
-      console.log('limited!')
-    }
+    addBindRef.current?.init()
+    // if (state.userData.extraCount < state.maxExtrasLimit) {
+    //   setState({luckyNumber: 88})
+    //   setState({userExtras: state.userExtras + 1})
+    // } else {
+    //   console.log('limited!')
+    // }
   }
 
   const loadingNode = (
@@ -428,6 +432,7 @@ export default function TigerBot() {
       <Modal title="Warning" visible={state.modalVisible} cancelText=""footer={[<Button onClick={handleOk} type="primary" >Switch</Button>]} closable={false}>
         <p>Please Switch to Rinkeby</p>
       </Modal>
+      <AddBind ref={addBindRef} search={refresh} />
     </>
   );
 }
