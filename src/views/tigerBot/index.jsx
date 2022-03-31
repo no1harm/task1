@@ -6,6 +6,7 @@ import { Space,Drawer,Row,Col,message,Modal,Button } from 'antd';
 import { useEffect } from "react";
 import { isEmpty, isNil, map, mergeRight, pick, clone } from 'ramda'
 import { useCallback } from "react";
+import SetExtras from './components/setExtra'
 import bot from '../../assets/images/bot.jpg'
 import { copyString } from '../../utils/index'
 import abi from "./abi/TigerBot.json";
@@ -255,7 +256,7 @@ export default function TigerBot() {
   }
 
   const setUserExtras = () => {
-    addBindRef.current?.init()
+    addBindRef.current?.init({maxExtras: state.contractObject.maxExtra,userExtras: state.userData.extraCount,userNumber: state.userData.luckyNumber})
     // if (state.userData.extraCount < state.maxExtrasLimit) {
     //   setState({luckyNumber: 88})
     //   setState({userExtras: state.userExtras + 1})
@@ -432,7 +433,7 @@ export default function TigerBot() {
       <Modal title="Warning" visible={state.modalVisible} cancelText=""footer={[<Button onClick={handleOk} type="primary" >Switch</Button>]} closable={false}>
         <p>Please Switch to Rinkeby</p>
       </Modal>
-      <AddBind ref={addBindRef} search={refresh} />
+      <SetExtras ref={addBindRef} search={refresh} />
     </>
   );
 }
